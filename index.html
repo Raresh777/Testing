@@ -8,7 +8,7 @@
     body {
       font-family: 'Arial', sans-serif;
       background-color: rgba(0, 0, 0, 0.7);
-      color: #00FF00;
+      color: #FFFF00;
       padding: 40px;
       font-size: 18px;
       display: flex;
@@ -17,15 +17,15 @@
     }
 
     h1 {
-      color: #00FF00;
+      color: #FFFF00;
       margin-bottom: 30px;
       font-size: 42px;
     }
 
     input[type="file"], input[type="date"], button {
-      color: #00FF00;
+      color: #FFFF00;
       background-color: rgba(0, 0, 0, 0.3);
-      border: 2px solid #00FF00;
+      border: 2px solid #FFFF00;
       padding: 12px;
       border-radius: 8px;
       margin: 10px;
@@ -34,7 +34,7 @@
     }
 
     button:hover, input:hover {
-      background-color: rgba(0, 255, 0, 0.1);
+      background-color: rgba(255, 255, 0, 0.1);
     }
 
     #results {
@@ -51,7 +51,7 @@
     }
 
     h2, h3 {
-      color: #00FF00;
+      color: #FFFF00;
     }
 
     ul {
@@ -80,18 +80,22 @@
     }
 
     th, td {
-      border: 1px solid #00FF00;
+      border: 1px solid #FFFF00;
       padding: 8px;
       text-align: left;
     }
 
     th {
       background-color: rgba(0, 0, 0, 0.3);
-      color: #00FF00;
+      color: #FFFF00;
     }
 
     td {
       background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .target-number {
+      color: red;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -132,7 +136,6 @@
       </div>
     </div>
   </div>
-
   <!-- Right side tables for data summary -->
   <div id="summary">
     <!-- Table for Leads by Location -->
@@ -149,13 +152,14 @@
       </tbody>
     </table>
 
-    <!-- NEW Table for Leads by First Language per City -->
+    <!-- NEW Table for Leads by First Language per City with Target Numbers -->
     <h3>Leads by First Language per City</h3>
     <table id="languageSummaryTable">
       <thead>
         <tr>
           <th>City (Language)</th>
           <th>Leads</th>
+          <th>Target Leads</th>
         </tr>
       </thead>
       <tbody>
@@ -166,6 +170,17 @@
 
   <script>
     let leadsData = [];
+    const targetLeadsPerDay = {
+      'Katowice': {'English': 9, 'German': 11, 'Polish': 44, 'Ukrainian': 9},
+      'Chisinau': {'English': 9},
+      'Brasov': {'English': 5, 'Romanian': 30},
+      'Sofia': {'Bulgarian': 10, 'English': 15},
+      'Rabbat': {'Arabic': 20, 'French': 10},
+      'Constanta': {'Romanian': 8, 'English': 5},
+      'Iasi': {'Romanian': 25, 'English': 10},
+      'Ploiesti': {'Romanian': 15, 'English': 7},
+      // Add all other cities and languages here from your sheet
+    };
 
     // Chart instances
     let locationChart, languageChart;
@@ -259,15 +274,30 @@
         cell2.textContent = locationCount[location];
       }
 
-      // Populate the summary table for languages per city
+      // Populate the summary table for languages per city with target leads
       for (let city in cityLanguageCount) {
         for (let language in cityLanguageCount[city]) {
+          const actualLeads = cityLanguageCount[city][language];
+          const dailyTarget = targetLeadsPerDay[city]?.[language] || 0;
+          const startDateValue = document.getElementById('startDatePicker').value;
+          const endDateValue = document.getElementById('endDatePicker').value;
+          const startDate = new Date(startDateValue);
+          const endDate = new Date(endDateValue);
+          const daysSelected = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+          const targetLeads = dailyTarget * daysSelected;
+
           const row = languageSummaryTable.insertRow();
           const cell1 = row.insertCell(0);
           const cell2 = row.insertCell(1);
-          cell1.textContent = `${city} (${language})
-`;
-          cell2.textContent = cityLanguageCount[city][language];
+          const cell3 = row.insertCell(2);
+          cell1.textContent = `${city} (${language})`;
+          cell2.textContent = actualLeads;
+          cell3.textContent = targetLeads;
+
+          // Highlight in red if actual leads are less than target
+          if (actualLeads < targetLeads) {
+            cell3.classList.add('target-number');
+          }
         }
       }
 
@@ -293,9 +323,9 @@
           datasets: [{
             label: 'Leads by Location',
             data: locationData,
-            backgroundColor: 'rgba(0, 255, 0, 0.7)', // Tropical green with transparency
-            hoverBackgroundColor: 'rgba(0, 255, 0, 0.9)', // Brighter tropical green
-            borderColor: 'rgba(0, 255, 0, 1)', // Green for borders
+            backgroundColor: 'rgba(255, 255, 0, 0.7)', // Yellow with transparency
+            hoverBackgroundColor: 'rgba(255, 255, 0, 0.9)', // Brighter yellow
+            borderColor: 'rgba(255, 255, 0, 1)', // Yellow for borders
             borderWidth: 2,
             barThickness: 50,
             borderRadius: 10, // 3D-like rounded effect
@@ -314,16 +344,16 @@
                 display: false
               },
               ticks: {
-                color: '#00FF00'
+                color: '#FFFF00'
               }
             },
             y: {
               beginAtZero: true,
               grid: {
-                color: 'rgba(0, 255, 0, 0.3)' // Light green grid lines
+                color: 'rgba(255, 255, 0, 0.3)' // Light yellow grid lines
               },
               ticks: {
-                color: '#00FF00'
+                color: '#FFFF00'
               }
             }
           }
@@ -354,9 +384,9 @@
           datasets: [{
             label: 'Leads by Language per City',
             data: cityLanguageData,
-            backgroundColor: 'rgba(0, 255, 0, 0.7)', // Tropical green bars
-            hoverBackgroundColor: 'rgba(0, 255, 0, 0.9)', // Brighter on hover
-            borderColor: 'rgba(0, 255, 0, 1)', // Green borders
+            backgroundColor: 'rgba(255, 255, 0, 0.7)', // Yellow bars
+            hoverBackgroundColor: 'rgba(255, 255, 0, 0.9)', // Brighter on hover
+            borderColor: 'rgba(255, 255, 0, 1)', // Yellow borders
             borderWidth: 2,
             barThickness: 50,
             borderRadius: 10 // Rounded 3D effect
@@ -375,7 +405,7 @@
                 display: false
               },
               ticks: {
-                color: '#00FF00',
+                color: '#FFFF00',
                 autoSkip: false,
                 maxRotation: 45,
                 minRotation: 45
@@ -384,10 +414,10 @@
             y: {
               beginAtZero: true,
               grid: {
-                color: 'rgba(0, 255, 0, 0.3)' // Light green grid lines
+                color: 'rgba(255, 255, 0, 0.3)' // Light yellow grid lines
               },
               ticks: {
-                color: '#00FF00'
+                color: '#FFFF00'
               }
             }
           }
