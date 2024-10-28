@@ -7,42 +7,49 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
     }
-    .calendar {
+    h1 {
+      margin-bottom: 10px;
+    }
+    .calendar-container {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      margin-top: 20px;
+      gap: 5px;
+      max-width: 600px;
     }
-    .day, .header {
+    .day-header, .day {
+      border: 1px solid #ddd;
       padding: 10px;
       text-align: center;
-      border: 1px solid #ccc;
     }
-    .header {
+    .day-header {
       font-weight: bold;
-      background-color: #f0f0f0;
+      background-color: #f4f4f4;
     }
     .day {
-      height: 100px;
+      min-height: 80px;
       position: relative;
+      vertical-align: top;
+      text-align: left;
     }
     .event {
       background-color: #4caf50;
-      color: white;
-      padding: 5px;
-      font-size: 12px;
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      right: 5px;
+      color: #fff;
+      padding: 3px;
+      font-size: 10px;
+      margin-top: 3px;
+      border-radius: 3px;
     }
   </style>
 </head>
 <body>
 
-<h1>Meeting Calendar</h1>
-<div id="calendar"></div>
+<h1>November 2024 - Meeting Calendar</h1>
+<div class="calendar-container" id="calendar"></div>
 
 <script>
   const events = [
@@ -58,46 +65,42 @@
   ];
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
+  const month = 10;  // November (0-indexed)
+  const year = 2024;
 
   function generateCalendar(month, year) {
     const calendarContainer = document.getElementById("calendar");
     calendarContainer.innerHTML = "";
 
-    // Headers
+    // Add day headers
     daysOfWeek.forEach(day => {
       const header = document.createElement("div");
-      header.classList.add("header");
+      header.classList.add("day-header");
       header.textContent = day;
       calendarContainer.appendChild(header);
     });
 
-    // Calculate days in month
-    const firstDay = new Date(year, month, 1).getDay();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startingDayOfWeek = firstDayOfMonth.getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Add blank days for the first week
-    for (let i = 0; i < firstDay; i++) {
-      const blankDay = document.createElement("div");
-      blankDay.classList.add("day");
-      calendarContainer.appendChild(blankDay);
+    // Fill empty cells before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      const emptyCell = document.createElement("div");
+      emptyCell.classList.add("day");
+      calendarContainer.appendChild(emptyCell);
     }
 
-    // Add actual days
+    // Fill days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const dayCell = document.createElement("div");
       dayCell.classList.add("day");
-      dayCell.textContent = day;
+      dayCell.innerHTML = `<strong>${day}</strong>`;
 
-      // Add events to the day
+      // Add events to the appropriate day
       events.forEach(event => {
-        if (event.date === date || (event.freq === "DAILY" && new Date(date) >= new Date(event.date)) ||
-          (event.freq === "WEEKLY" && new Date(date).getDay() === new Date(event.date).getDay() && new Date(date) >= new Date(event.date)) ||
-          (event.freq === "MONTHLY" && new Date(date).getDate() === new Date(event.date).getDate()) ||
-          (event.freq === "YEARLY" && new Date(date).getMonth() === new Date(event.date).getMonth() && new Date(date).getDate() === new Date(event.date).getDate())
-        ) {
+        if (shouldAddEvent(event, dateStr)) {
           const eventEl = document.createElement("div");
           eventEl.classList.add("event");
           eventEl.textContent = event.title;
@@ -109,7 +112,31 @@
     }
   }
 
-  generateCalendar(currentMonth, currentYear);
+  function shouldAddEvent(event, currentDate) {
+    const eventDate = new Date(event.date);
+    const current = new Date(currentDate);
+
+    if (event.date === currentDate) return true;
+
+    switch (event.freq) {
+      case "DAILY":
+        return current >= eventDate;
+      case "WEEKLY":
+        return current >= eventDate && current.getDay() === eventDate.getDay();
+      case "MONTHLY":
+        return current.getDate() === eventDate.getDate();
+      case "QUARTERLY":
+        return current.getDate() === eventDate.getDate() &&
+               (current.getMonth() - eventDate.getMonth()) % 3 === 0;
+      case "YEARLY":
+        return current.getDate() === eventDate.getDate() &&
+               current.getMonth() === eventDate.getMonth();
+      default:
+        return false;
+    }
+  }
+
+  generateCalendar(month, year);
 </script>
 
 </body>
