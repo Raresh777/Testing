@@ -1,143 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meeting Calendar</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-    h1 {
-      margin-bottom: 10px;
-    }
-    .calendar-container {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      max-width: 600px;
-    }
-    .day-header, .day {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-    .day-header {
-      font-weight: bold;
-      background-color: #f4f4f4;
-    }
-    .day {
-      min-height: 80px;
-      position: relative;
-      vertical-align: top;
-      text-align: left;
-    }
-    .event {
-      background-color: #4caf50;
-      color: #fff;
-      padding: 3px;
-      font-size: 10px;
-      margin-top: 3px;
-      border-radius: 3px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actors Leaderboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"></script>
 </head>
 <body>
+    <h1>Actors Leaderboard Generator</h1>
+    <input type="file" id="fileInput" />
+    <button id="processButton">Process CSV</button>
+    <h2>Leaderboard:</h2>
+    <pre id="output"></pre>
 
-<h1>November 2024 - Meeting Calendar</h1>
-<div class="calendar-container" id="calendar"></div>
+    <script>
+        document.getElementById('processButton').addEventListener('click', function () {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('Please upload a CSV file.');
+                return;
+            }
 
-<script>
-  const events = [
-    { title: "Daily Stand-up", date: "2024-11-01", freq: "DAILY" },
-    { title: "Weekly Kickoff on Monday", date: "2024-11-04", freq: "WEEKLY" },
-    { title: "Budget Optimization", date: "2024-11-07", freq: "WEEKLY" },
-    { title: "Ads Content Engagement Review", date: "2024-11-01", freq: "MONTHLY" },
-    { title: "Social Media Response Time Tracking", date: "2024-11-03", freq: "MONTHLY" },
-    { title: "Brainstorming Session", date: "2024-11-09", freq: "MONTHLY" },
-    { title: "Organic Content Strategy", date: "2024-11-15", freq: "MONTHLY" },
-    { title: "Community Growth Planning", date: "2024-11-01", freq: "QUARTERLY" },
-    { title: "Ads Budget Planning", date: "2024-12-01", freq: "YEARLY" },
-  ];
+            const file = fileInput.files[0];
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const month = 10;  // November (0-indexed)
-  const year = 2024;
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    const data = results.data;
 
-  function generateCalendar(month, year) {
-    const calendarContainer = document.getElementById("calendar");
-    calendarContainer.innerHTML = "";
+                    // Step 1: Split the 'ad_name' column by space
+                    data.forEach(row => {
+                        if (row.ad_name) {
+                            const splitData = row.ad_name.split(' ');
+                            row.Location = row.Location || splitData[0];
+                            row.Language = row.Language || splitData[1];
+                            row.Actor = splitData[2]; // Assuming column G contains names post-split
+                        }
+                    });
 
-    // Add day headers
-    daysOfWeek.forEach(day => {
-      const header = document.createElement("div");
-      header.classList.add("day-header");
-      header.textContent = day;
-      calendarContainer.appendChild(header);
-    });
+                    // Step 2: Count the occurrences of each actor
+                    const actorStats = {};
+                    data.forEach(row => {
+                        const key = `${row.Actor}|${row.Location}|${row.Language}`;
+                        if (actorStats[key]) {
+                            actorStats[key]++;
+                        } else {
+                            actorStats[key] = 1;
+                        }
+                    });
 
-    const firstDayOfMonth = new Date(year, month, 1);
-    const startingDayOfWeek = firstDayOfMonth.getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    // Step 3: Format the statistics for display
+                    const formattedStats = Object.entries(actorStats).map(([key, count]) => {
+                        const [actor, location, language] = key.split('|');
+                        return `${actor} - ${location} - ${language}: ${count}`;
+                    });
 
-    // Fill empty cells before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      const emptyCell = document.createElement("div");
-      emptyCell.classList.add("day");
-      calendarContainer.appendChild(emptyCell);
-    }
-
-    // Fill days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const dayCell = document.createElement("div");
-      dayCell.classList.add("day");
-      dayCell.innerHTML = `<strong>${day}</strong>`;
-
-      // Add events to the appropriate day
-      events.forEach(event => {
-        if (shouldAddEvent(event, dateStr)) {
-          const eventEl = document.createElement("div");
-          eventEl.classList.add("event");
-          eventEl.textContent = event.title;
-          dayCell.appendChild(eventEl);
-        }
-      });
-
-      calendarContainer.appendChild(dayCell);
-    }
-  }
-
-  function shouldAddEvent(event, currentDate) {
-    const eventDate = new Date(event.date);
-    const current = new Date(currentDate);
-
-    if (event.date === currentDate) return true;
-
-    switch (event.freq) {
-      case "DAILY":
-        return current >= eventDate;
-      case "WEEKLY":
-        return current >= eventDate && current.getDay() === eventDate.getDay();
-      case "MONTHLY":
-        return current.getDate() === eventDate.getDate();
-      case "QUARTERLY":
-        return current.getDate() === eventDate.getDate() &&
-               (current.getMonth() - eventDate.getMonth()) % 3 === 0;
-      case "YEARLY":
-        return current.getDate() === eventDate.getDate() &&
-               current.getMonth() === eventDate.getMonth();
-      default:
-        return false;
-    }
-  }
-
-  generateCalendar(month, year);
-</script>
-
+                    // Display the leaderboard
+                    document.getElementById('output').textContent = formattedStats.join('\n');
+                },
+                error: function (error) {
+                    console.error('Error parsing CSV:', error);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
