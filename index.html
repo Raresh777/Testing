@@ -115,13 +115,13 @@
 
                     // Process rows
                     data.forEach(row => {
-                        const adName = row.ad_name;
+                        const adName = row['ad_name']; // Explicitly look for column M named 'ad_name'
                         if (!adName) return;
 
                         // Extract first and last name
-                        const nameParts = adName.split(' ');
+                        const nameParts = adName.trim().split(' ');
                         let firstName = nameParts[0] || 'Unknown';
-                        let lastName = nameParts[nameParts.length - 1] || 'Unknown';
+                        let lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'Unknown';
 
                         if (firstName && lastName) {
                             const fullName = `${firstName} ${lastName}`;
