@@ -94,10 +94,8 @@
     <table id="leaderboard">
         <thead>
             <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
+                <th>Name</th>
                 <th>Total Appearances</th>
-                <th>Details</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -118,46 +116,29 @@
                 skipEmptyLines: true,
                 complete: function (results) {
                     const data = results.data;
-                    const actorStats = {};
-                    const unmatchedRows = [];
+                    const nameCounts = {};
 
                     // Process rows
                     data.forEach(row => {
-                        const adName = row['ad_name']; // Explicitly look for column M named 'ad_name'
+                        const adName = row['ad_name']; // Explicitly look for column M
                         if (!adName) return;
 
-                        // Extract first and last name
-                        const splitName = adName.replace(/([a-z])([A-Z])/g, '$1 $2').trim().split(' ');
-                        let firstName = splitName[0] || 'Unknown';
-                        let lastName = splitName.length > 1 ? splitName.slice(1).join(' ') : 'Unknown';
-
-                        const fullName = `${firstName} ${lastName}`;
-                        if (!actorStats[fullName]) {
-                            actorStats[fullName] = {
-                                firstName: firstName,
-                                lastName: lastName,
-                                total: 0,
-                                details: []
-                            };
+                        const name = adName.trim(); // Use the full ad_name directly
+                        if (!nameCounts[name]) {
+                            nameCounts[name] = 0;
                         }
-
-                        actorStats[fullName].total++;
-                        actorStats[fullName].details.push(`${row.Location || 'Unknown'} (${row.Language || 'Unknown'})`);
+                        nameCounts[name]++;
                     });
 
                     // Render the leaderboard
                     const leaderboardBody = document.querySelector('#leaderboard tbody');
                     leaderboardBody.innerHTML = ''; // Clear existing rows
 
-                    Object.keys(actorStats).forEach(fullName => {
-                        const actor = actorStats[fullName];
-
+                    Object.keys(nameCounts).forEach(name => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${actor.firstName}</td>
-                            <td>${actor.lastName}</td>
-                            <td>${actor.total}</td>
-                            <td>${[...new Set(actor.details)].join(', ')}</td>
+                            <td>${name}</td>
+                            <td>${nameCounts[name]}</td>
                         `;
                         leaderboardBody.appendChild(row);
                     });
