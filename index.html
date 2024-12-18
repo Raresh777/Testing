@@ -8,8 +8,8 @@
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background: #1a001a;
-            color: #d1b3ff;
+            background: #f4f4f9;
+            color: #333333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,26 +21,31 @@
 
         h1 {
             text-align: center;
-            color: #9c27b0;
-            text-shadow: 0 0 10px #9c27b0, 0 0 20px #bf00ff;
+            color: #444444;
+            font-weight: 700;
+            margin-bottom: 20px;
         }
 
         #fileInput, #processButton {
             margin: 10px;
             padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: #6a0080;
-            color: #ffffff;
-            box-shadow: 0 0 10px #9c27b0, 0 0 20px #bf00ff;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            color: #333333;
         }
 
-        #fileInput:hover, #processButton:hover {
-            background: #9c27b0;
-            box-shadow: 0 0 15px #bf00ff, 0 0 30px #e100ff;
+        #processButton {
+            background: #0073e6;
+            color: #ffffff;
+            border: none;
+        }
+
+        #processButton:hover {
+            background: #005bb5;
         }
 
         #leaderboard {
@@ -48,26 +53,29 @@
             max-width: 800px;
             margin: 20px auto;
             border-collapse: collapse;
-            background: #2a0036;
-            border: 2px solid #9c27b0;
-            box-shadow: 0 0 10px #9c27b0;
+            background: #ffffff;
+            border: 1px solid #dddddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #leaderboard th, #leaderboard td {
-            border: 1px solid #9c27b0;
+            border: 1px solid #dddddd;
             padding: 12px;
             text-align: left;
-            color: #d1b3ff;
         }
 
         #leaderboard th {
-            background: #6a0080;
+            background: #0073e6;
             color: #ffffff;
-            text-shadow: 0 0 10px #9c27b0;
+            font-weight: 700;
         }
 
-        #leaderboard td {
-            background: #24002a;
+        #leaderboard tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #leaderboard tr:hover {
+            background-color: #f1f1f1;
         }
 
         @media (max-width: 600px) {
