@@ -8,8 +8,8 @@
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background: #f4f4f9;
-            color: #333333;
+            background: #0a0a0a;
+            color: #39ff14;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,31 +21,28 @@
 
         h1 {
             text-align: center;
-            color: #444444;
+            color: #39ff14;
             font-weight: 700;
             margin-bottom: 20px;
+            text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14;
         }
 
         #fileInput, #processButton {
             margin: 10px;
             padding: 10px 20px;
-            border: 1px solid #ccc;
+            border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            background: #1a1a1a;
+            color: #39ff14;
+            box-shadow: 0 0 5px #39ff14;
             transition: all 0.2s ease;
-            background: #ffffff;
-            color: #333333;
         }
 
-        #processButton {
-            background: #0073e6;
-            color: #ffffff;
-            border: none;
-        }
-
-        #processButton:hover {
-            background: #005bb5;
+        #processButton:hover, #fileInput:hover {
+            background: #262626;
+            box-shadow: 0 0 10px #39ff14;
         }
 
         #leaderboard {
@@ -53,29 +50,32 @@
             max-width: 800px;
             margin: 20px auto;
             border-collapse: collapse;
-            background: #ffffff;
-            border: 1px solid #dddddd;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: #1a1a1a;
+            color: #39ff14;
+            border: 1px solid #39ff14;
+            box-shadow: 0 0 10px #39ff14;
         }
 
         #leaderboard th, #leaderboard td {
-            border: 1px solid #dddddd;
+            border: 1px solid #39ff14;
             padding: 12px;
             text-align: left;
         }
 
         #leaderboard th {
-            background: #0073e6;
-            color: #ffffff;
+            background: #262626;
+            color: #39ff14;
+            text-shadow: 0 0 5px #39ff14;
             font-weight: 700;
         }
 
         #leaderboard tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #0f0f0f;
         }
 
         #leaderboard tr:hover {
-            background-color: #f1f1f1;
+            background-color: #262626;
+            box-shadow: inset 0 0 10px #39ff14;
         }
 
         @media (max-width: 600px) {
@@ -127,80 +127,38 @@
                         if (!adName) return;
 
                         // Extract first and last name
-                        const nameParts = adName.trim().split(' ');
-                        let firstName = nameParts[0] || 'Unknown';
-                        let lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'Unknown';
+                        const splitName = adName.replace(/([a-z])([A-Z])/g, '$1 $2').trim().split(' ');
+                        let firstName = splitName[0] || 'Unknown';
+                        let lastName = splitName.length > 1 ? splitName.slice(1).join(' ') : 'Unknown';
 
-                        if (firstName && lastName) {
-                            const fullName = `${firstName} ${lastName}`;
-                            if (!actorStats[fullName]) {
-                                actorStats[fullName] = {
-                                    firstName: firstName,
-                                    lastName: lastName,
-                                    total: 0,
-                                    details: []
-                                };
-                            }
-
-                            actorStats[fullName].total++;
-                            actorStats[fullName].details.push(`${row.Location || 'Unknown'} (${row.Language || 'Unknown'})`);
-                        } else {
-                            // Add unmatched rows to preserve data
-                            unmatchedRows.push(adName);
+                        const fullName = `${firstName} ${lastName}`;
+                        if (!actorStats[fullName]) {
+                            actorStats[fullName] = {
+                                firstName: firstName,
+                                lastName: lastName,
+                                total: 0,
+                                details: []
+                            };
                         }
+
+                        actorStats[fullName].total++;
+                        actorStats[fullName].details.push(`${row.Location || 'Unknown'} (${row.Language || 'Unknown'})`);
                     });
 
                     // Render the leaderboard
                     const leaderboardBody = document.querySelector('#leaderboard tbody');
                     leaderboardBody.innerHTML = ''; // Clear existing rows
 
-                    // Display matched actor stats
                     Object.keys(actorStats).forEach(fullName => {
                         const actor = actorStats[fullName];
 
                         const row = document.createElement('tr');
-
-                        const firstNameCell = document.createElement('td');
-                        firstNameCell.textContent = actor.firstName;
-
-                        const lastNameCell = document.createElement('td');
-                        lastNameCell.textContent = actor.lastName;
-
-                        const totalCell = document.createElement('td');
-                        totalCell.textContent = actor.total;
-
-                        const detailsCell = document.createElement('td');
-                        detailsCell.textContent = [...new Set(actor.details)].join(', ');
-
-                        row.appendChild(firstNameCell);
-                        row.appendChild(lastNameCell);
-                        row.appendChild(totalCell);
-                        row.appendChild(detailsCell);
-
-                        leaderboardBody.appendChild(row);
-                    });
-
-                    // Display unmatched rows
-                    unmatchedRows.forEach(adName => {
-                        const row = document.createElement('tr');
-
-                        const firstNameCell = document.createElement('td');
-                        firstNameCell.textContent = 'N/A';
-
-                        const lastNameCell = document.createElement('td');
-                        lastNameCell.textContent = 'N/A';
-
-                        const totalCell = document.createElement('td');
-                        totalCell.textContent = 1;
-
-                        const detailsCell = document.createElement('td');
-                        detailsCell.textContent = adName;
-
-                        row.appendChild(firstNameCell);
-                        row.appendChild(lastNameCell);
-                        row.appendChild(totalCell);
-                        row.appendChild(detailsCell);
-
+                        row.innerHTML = `
+                            <td>${actor.firstName}</td>
+                            <td>${actor.lastName}</td>
+                            <td>${actor.total}</td>
+                            <td>${[...new Set(actor.details)].join(', ')}</td>
+                        `;
                         leaderboardBody.appendChild(row);
                     });
                 },
