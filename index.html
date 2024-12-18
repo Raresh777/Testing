@@ -83,7 +83,8 @@
     <table id="leaderboard">
         <thead>
             <tr>
-                <th>Actor</th>
+                <th>First Name</th>
+                <th>Last Name</th>
                 <th>Total Appearances</th>
                 <th>Details</th>
             </tr>
@@ -106,53 +107,94 @@
                 skipEmptyLines: true,
                 complete: function (results) {
                     const data = results.data;
-
-                    // Step 1: Split the 'ad_name' column by space
-                    data.forEach(row => {
-                        if (row.ad_name) {
-                            const splitData = row.ad_name.split(' ');
-                            row.Location = row.Location || splitData[0];
-                            row.Language = row.Language || splitData[1];
-                            row.Actor = splitData[2]; // Assuming column G contains names post-split
-                        }
-                    });
-
-                    // Step 2: Count the occurrences of each actor and group their details
                     const actorStats = {};
-                    data.forEach(row => {
-                        if (!row.Actor) return;
+                    const unmatchedRows = [];
 
-                        const actor = row.Actor;
-                        if (!actorStats[actor]) {
-                            actorStats[actor] = {
-                                total: 0,
-                                details: []
-                            };
+                    // Process rows
+                    data.forEach(row => {
+                        const adName = row.ad_name;
+                        if (!adName) return;
+
+                        // Extract first and last name
+                        const nameParts = adName.split(' ');
+                        let firstName = null;
+                        let lastName = null;
+
+                        if (nameParts.length >= 2) {
+                            firstName = nameParts[0];
+                            lastName = nameParts[1];
                         }
 
-                        actorStats[actor].total++;
-                        actorStats[actor].details.push(`${row.Location} (${row.Language})`);
+                        if (firstName && lastName) {
+                            const fullName = `${firstName} ${lastName}`;
+                            if (!actorStats[fullName]) {
+                                actorStats[fullName] = {
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    total: 0,
+                                    details: []
+                                };
+                            }
+
+                            actorStats[fullName].total++;
+                            actorStats[fullName].details.push(`${row.Location || 'Unknown'} (${row.Language || 'Unknown'})`);
+                        } else {
+                            // Add unmatched rows to preserve data
+                            unmatchedRows.push(adName);
+                        }
                     });
 
-                    // Step 3: Render the leaderboard
+                    // Render the leaderboard
                     const leaderboardBody = document.querySelector('#leaderboard tbody');
                     leaderboardBody.innerHTML = ''; // Clear existing rows
 
-                    Object.keys(actorStats).forEach(actor => {
+                    // Display matched actor stats
+                    Object.keys(actorStats).forEach(fullName => {
+                        const actor = actorStats[fullName];
+
                         const row = document.createElement('tr');
 
-                        const actorCell = document.createElement('td');
-                        actorCell.textContent = actor;
+                        const firstNameCell = document.createElement('td');
+                        firstNameCell.textContent = actor.firstName;
+
+                        const lastNameCell = document.createElement('td');
+                        lastNameCell.textContent = actor.lastName;
 
                         const totalCell = document.createElement('td');
-                        totalCell.textContent = actorStats[actor].total;
+                        totalCell.textContent = actor.total;
 
                         const detailsCell = document.createElement('td');
-                        detailsCell.textContent = [...new Set(actorStats[actor].details)].join(', ');
+                        detailsCell.textContent = [...new Set(actor.details)].join(', ');
 
-                        row.appendChild(actorCell);
+                        row.appendChild(firstNameCell);
+                        row.appendChild(lastNameCell);
                         row.appendChild(totalCell);
                         row.appendChild(detailsCell);
+
+                        leaderboardBody.appendChild(row);
+                    });
+
+                    // Display unmatched rows
+                    unmatchedRows.forEach(adName => {
+                        const row = document.createElement('tr');
+
+                        const firstNameCell = document.createElement('td');
+                        firstNameCell.textContent = 'N/A';
+
+                        const lastNameCell = document.createElement('td');
+                        lastNameCell.textContent = 'N/A';
+
+                        const totalCell = document.createElement('td');
+                        totalCell.textContent = 1;
+
+                        const detailsCell = document.createElement('td');
+                        detailsCell.textContent = adName;
+
+                        row.appendChild(firstNameCell);
+                        row.appendChild(lastNameCell);
+                        row.appendChild(totalCell);
+                        row.appendChild(detailsCell);
+
                         leaderboardBody.appendChild(row);
                     });
                 },
