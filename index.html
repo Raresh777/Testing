@@ -8,8 +8,8 @@
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background: #0f0f0f;
-            color: #00ff00;
+            background: #1a001a;
+            color: #d1b3ff;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,26 +21,26 @@
 
         h1 {
             text-align: center;
-            color: #00bfff;
+            color: #9c27b0;
+            text-shadow: 0 0 10px #9c27b0, 0 0 20px #bf00ff;
         }
 
         #fileInput, #processButton {
             margin: 10px;
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            background: #6a0080;
+            color: #ffffff;
+            box-shadow: 0 0 10px #9c27b0, 0 0 20px #bf00ff;
         }
 
-        #fileInput {
-            background: #333;
-            color: #00ff00;
-        }
-
-        #processButton {
-            background: #00bfff;
-            color: white;
+        #fileInput:hover, #processButton:hover {
+            background: #9c27b0;
+            box-shadow: 0 0 15px #bf00ff, 0 0 30px #e100ff;
         }
 
         #leaderboard {
@@ -48,23 +48,26 @@
             max-width: 800px;
             margin: 20px auto;
             border-collapse: collapse;
-            background: #1a1a1a;
-            border: 1px solid #00ff00;
+            background: #2a0036;
+            border: 2px solid #9c27b0;
+            box-shadow: 0 0 10px #9c27b0;
         }
 
         #leaderboard th, #leaderboard td {
-            border: 1px solid #00ff00;
-            padding: 10px;
+            border: 1px solid #9c27b0;
+            padding: 12px;
             text-align: left;
+            color: #d1b3ff;
         }
 
         #leaderboard th {
-            background: #00bfff;
-            color: white;
+            background: #6a0080;
+            color: #ffffff;
+            text-shadow: 0 0 10px #9c27b0;
         }
 
         #leaderboard td {
-            color: #00ff00;
+            background: #24002a;
         }
 
         @media (max-width: 600px) {
@@ -117,13 +120,8 @@
 
                         // Extract first and last name
                         const nameParts = adName.split(' ');
-                        let firstName = null;
-                        let lastName = null;
-
-                        if (nameParts.length >= 2) {
-                            firstName = nameParts[0];
-                            lastName = nameParts[1];
-                        }
+                        let firstName = nameParts[0] || 'Unknown';
+                        let lastName = nameParts[nameParts.length - 1] || 'Unknown';
 
                         if (firstName && lastName) {
                             const fullName = `${firstName} ${lastName}`;
