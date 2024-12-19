@@ -94,8 +94,11 @@
     <table id="leaderboard">
         <thead>
             <tr>
-                <th>Word</th>
-                <th>Occurrences</th>
+                <th>Column 1</th>
+                <th>Column 2</th>
+                <th>Column 3</th>
+                <th>Column 4</th>
+                <th>Column 5</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -116,7 +119,9 @@
                 skipEmptyLines: true,
                 complete: function (results) {
                     const data = results.data;
-                    const wordCounts = {};
+
+                    const leaderboardBody = document.querySelector('#leaderboard tbody');
+                    leaderboardBody.innerHTML = ''; // Clear existing rows
 
                     // Process rows
                     data.forEach(row => {
@@ -124,27 +129,15 @@
                         if (!adName) return;
 
                         const words = adName.split(/\s+/); // Split by spaces
-                        words.forEach(word => {
-                            const cleanedWord = word.trim().toLowerCase();
-                            if (!cleanedWord) return;
-                            if (!wordCounts[cleanedWord]) {
-                                wordCounts[cleanedWord] = 0;
-                            }
-                            wordCounts[cleanedWord]++;
-                        });
-                    });
 
-                    // Render the leaderboard
-                    const leaderboardBody = document.querySelector('#leaderboard tbody');
-                    leaderboardBody.innerHTML = ''; // Clear existing rows
+                        const rowElement = document.createElement('tr');
+                        for (let i = 0; i < 5; i++) { // Ensure 5 columns
+                            const cell = document.createElement('td');
+                            cell.textContent = words[i] || ''; // Add word or empty if missing
+                            rowElement.appendChild(cell);
+                        }
 
-                    Object.keys(wordCounts).forEach(word => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${word}</td>
-                            <td>${wordCounts[word]}</td>
-                        `;
-                        leaderboardBody.appendChild(row);
+                        leaderboardBody.appendChild(rowElement);
                     });
                 },
                 error: function (error) {
