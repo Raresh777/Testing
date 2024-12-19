@@ -8,8 +8,8 @@
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background: #e6f0ff;
-            color: #004080;
+            background: #1e1e2f;
+            color: #e6e6e6;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,10 +21,10 @@
 
         h1 {
             text-align: center;
-            color: #004080;
+            color: #e6e6e6;
             font-weight: 700;
             margin-bottom: 20px;
-            text-shadow: 0 0 5px #80bfff;
+            text-shadow: 0 0 10px #ffcc00;
         }
 
         #fileInput, #processButton {
@@ -34,15 +34,15 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
-            background: #004080;
-            color: #ffffff;
-            box-shadow: 0 0 5px #80bfff;
-            transition: all 0.2s ease;
+            background: #ffcc00;
+            color: #1e1e2f;
+            box-shadow: 0 0 10px #ffcc00;
+            transition: all 0.3s ease;
         }
 
         #processButton:hover, #fileInput:hover {
-            background: #00264d;
-            box-shadow: 0 0 10px #80bfff;
+            background: #ffaa00;
+            box-shadow: 0 0 15px #ffcc00;
         }
 
         #leaderboard {
@@ -50,31 +50,32 @@
             max-width: 800px;
             margin: 20px auto;
             border-collapse: collapse;
-            background: #ffffff;
-            color: #004080;
-            border: 1px solid #80bfff;
-            box-shadow: 0 0 10px #80bfff;
+            background: #29293d;
+            color: #e6e6e6;
+            border: 1px solid #ffaa00;
+            box-shadow: 0 0 15px #ffaa00;
         }
 
         #leaderboard th, #leaderboard td {
-            border: 1px solid #80bfff;
+            border: 1px solid #ffaa00;
             padding: 12px;
             text-align: left;
         }
 
         #leaderboard th {
-            background: #004080;
-            color: #ffffff;
-            text-shadow: 0 0 5px #80bfff;
+            background: #ffaa00;
+            color: #1e1e2f;
+            text-shadow: 0 0 10px #ffcc00;
             font-weight: 700;
         }
 
         #leaderboard tr:nth-child(even) {
-            background-color: #f0f8ff;
+            background-color: #353545;
         }
 
         #leaderboard tr:hover {
-            background-color: #cce6ff;
+            background-color: #ffaa00;
+            color: #1e1e2f;
         }
 
         @media (max-width: 600px) {
@@ -93,8 +94,8 @@
     <table id="leaderboard">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Total Appearances</th>
+                <th>Word</th>
+                <th>Occurrences</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -115,29 +116,33 @@
                 skipEmptyLines: true,
                 complete: function (results) {
                     const data = results.data;
-                    const nameCounts = {};
+                    const wordCounts = {};
 
                     // Process rows
                     data.forEach(row => {
-                        const adName = row['ad_name']; // Explicitly look for column M
+                        const adName = row['ad_name']; // Column containing text
                         if (!adName) return;
 
-                        const name = adName.trim(); // Use the full ad_name directly
-                        if (!nameCounts[name]) {
-                            nameCounts[name] = 0;
-                        }
-                        nameCounts[name]++;
+                        const words = adName.split(/\s+/); // Split by spaces
+                        words.forEach(word => {
+                            const cleanedWord = word.trim().toLowerCase();
+                            if (!cleanedWord) return;
+                            if (!wordCounts[cleanedWord]) {
+                                wordCounts[cleanedWord] = 0;
+                            }
+                            wordCounts[cleanedWord]++;
+                        });
                     });
 
                     // Render the leaderboard
                     const leaderboardBody = document.querySelector('#leaderboard tbody');
                     leaderboardBody.innerHTML = ''; // Clear existing rows
 
-                    Object.keys(nameCounts).forEach(name => {
+                    Object.keys(wordCounts).forEach(word => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${name}</td>
-                            <td>${nameCounts[name]}</td>
+                            <td>${word}</td>
+                            <td>${wordCounts[word]}</td>
                         `;
                         leaderboardBody.appendChild(row);
                     });
