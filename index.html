@@ -99,6 +99,7 @@
                 <th>Column 3</th>
                 <th>Column 4</th>
                 <th>Column 5</th>
+                <th>Occurrences</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -119,9 +120,7 @@
                 skipEmptyLines: true,
                 complete: function (results) {
                     const data = results.data;
-
-                    const leaderboardBody = document.querySelector('#leaderboard tbody');
-                    leaderboardBody.innerHTML = ''; // Clear existing rows
+                    const counts = {};
 
                     // Process rows
                     data.forEach(row => {
@@ -129,13 +128,29 @@
                         if (!adName) return;
 
                         const words = adName.split(/\s+/); // Split by spaces
+                        const joinedWords = words.join(' ');
 
+                        if (!counts[joinedWords]) {
+                            counts[joinedWords] = { words, count: 0 };
+                        }
+                        counts[joinedWords].count++;
+                    });
+
+                    const leaderboardBody = document.querySelector('#leaderboard tbody');
+                    leaderboardBody.innerHTML = ''; // Clear existing rows
+
+                    Object.values(counts).forEach(entry => {
                         const rowElement = document.createElement('tr');
+
                         for (let i = 0; i < 5; i++) { // Ensure 5 columns
                             const cell = document.createElement('td');
-                            cell.textContent = words[i] || ''; // Add word or empty if missing
+                            cell.textContent = entry.words[i] || ''; // Add word or empty if missing
                             rowElement.appendChild(cell);
                         }
+
+                        const countCell = document.createElement('td');
+                        countCell.textContent = entry.count; // Add occurrences
+                        rowElement.appendChild(countCell);
 
                         leaderboardBody.appendChild(rowElement);
                     });
